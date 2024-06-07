@@ -75,6 +75,8 @@
               
               this.initRepainters();
               this.attachCheckboxes();
+
+              this.initCollab();
             },
             _zoomFactor: -1,
             initZoom: function() {
@@ -91,7 +93,7 @@
                 }
                 window.dispatchEvent(new Event('resize'));
               });
-            },
+            }, // initZoom
             attachCheckboxes: function() {
                 const svg = document.getElementsByTagName('svg')[0];
                 const svgContainer = document.getElementById('svg-container');
@@ -111,7 +113,7 @@
                     checkbox.style.top = `${bbox.y-8}px`;
                     svgContainer.appendChild(checkbox);
                 });
-            },
+            }, // attachCheckboxes
             initRepainters: function() {
 
                 // Assign unique child classes to each SVG child element
@@ -138,7 +140,17 @@
                       checkbox.style.top = `${bbox.y-8}px`;
                     });
                 })
-            },
+            }, // initRepainters
+            initCollab() {
+              document.querySelectorAll("input.svg-checkbox").forEach((el) => {
+                el.addEventListener("change", (event) => {
+                  var checkmarks = [];
+                  document.querySelectorAll("input.svg-checkbox").forEach((el, i) => { if (el.checked) checkmarks.push(i); });
+                  checkmarks = JSON.stringify(checkmarks);
+                  console.log("Collab checkmarks", checkmarks);
+                });
+              });
+            } // initCollab
         }; // App
 
         document.addEventListener('DOMContentLoaded', () => {
