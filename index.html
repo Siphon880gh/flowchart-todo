@@ -71,6 +71,7 @@
     <script>
         const App = {
             init: function() {
+              console.log("App.init")
               this.initZoom()
               
               this.initRepainters();
@@ -142,19 +143,56 @@
                 })
             }, // initRepainters
             initCollab() {
+
+              // When the page loads, read the checked indexes
+              fetch("logic/read.php")
+              .then(response=>response.json())
+              .then((obj) => {
+                  // Fill textareas
+                  // console.log({obj});
+
+                  //var obj = JSON.parse(obj), // switched from $.get and $.post to fetch which already parsed JSON
+
+                  var checkmarks = obj.checkmarks;
+                  checkmarks = JSON.parse(checkmarks);
+
+                  checkmarks.forEach((checkmarkPos) => {
+                    var test = document.querySelectorAll("input.svg-checkbox")?.[checkmarkPos];
+                    if(test)
+                      test.checked = true; 
+                  })
+
+                  // console.log(obj.current); 
+              }); // fetch
+
+
+              // When a checkbox is checked, save the checked indexes
               document.querySelectorAll("input.svg-checkbox").forEach((el) => {
                 el.addEventListener("change", (event) => {
                   var checkmarks = [];
-                  document.querySelectorAll("input.svg-checkbox").forEach((el, i) => { if (el.checked) checkmarks.push(i); });
+                  document.querySelectorAll("input.svg-checkbox").forEach((el, i) => { if (el.checked) checkmarks.push(el.getAttribute("paired")); });
                   checkmarks = JSON.stringify(checkmarks);
                   console.log("Collab checkmarks", checkmarks);
+
+                  fetch("logic/write.php", {
+                    method: "POST",
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ checkmarks })
+                  }).then(response=>response.text())
+                  .then((res) => { console.log(res); });
                 });
               });
             } // initCollab
         }; // App
 
         document.addEventListener('DOMContentLoaded', () => {
-            App.init();
+          App.init(); 
+
+          setTimeout(()=>{
+            window.dispatchEvent(new Event('resize'));
+          }, 2000);
         });
     </script>
 </body>
