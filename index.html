@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SVG Flowchart with Checkboxes - Teamspace</title>
+    <title>Flowchart Todo - Teamspace</title>
     <style>
         #svg-container {
           width:100%;
@@ -26,6 +26,7 @@
   </style>
 </head>
 <body>
+    <h1>Flowchart Todo</h1>
     <div style="display:block; top:0; left:0;"><button data-svg-zoomer>Zoom</button></div>
     <!-- TOOLER: Add "data-checkbox" attribute to svg children you want to have floating checkboxes that your team ticks -->
     <!-- TOOLER: If want zoom feature to work, make sure sure to remove width and height attributes
@@ -190,9 +191,9 @@
         document.addEventListener('DOMContentLoaded', () => {
           App.init(); 
 
-          setTimeout(()=>{
-            window.dispatchEvent(new Event('resize'));
-          }, 2000);
+          // setTimeout(()=>{
+          //   window.dispatchEvent(new Event('resize'));
+          // }, 2000);
         });
     </script>
 </body>
