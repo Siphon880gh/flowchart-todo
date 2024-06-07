@@ -69,11 +69,11 @@
     </div> <!-- .svg-container -->
 
     <script>
-              const App = {
+        const App = {
             init: function() {
               this.initZoom()
               
-              // this.attachCheckboxes();
+              this.attachCheckboxes();
               // this.initRepainters();
             },
             _zoomFactor: -1,
@@ -92,7 +92,22 @@
                 window.dispatchEvent(new Event('resize'));
               });
             },
-        };
+            attachCheckboxes: function() {
+                const svg = document.getElementsByTagName('svg')[0];
+                const svgContainer = document.getElementById('svg-container');
+                const svgDrawings = svg.querySelectorAll('[data-checkbox]');
+                svgDrawings.forEach(svgDrawing => {
+                    // const bbox = element.getBBox(); // can be inaccurate even after render
+                    const bbox = svgDrawing.getBoundingClientRect();
+                    const checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.classList.add('svg-checkbox');
+                    checkbox.style.left = `${bbox.x-8}px`;
+                    checkbox.style.top = `${bbox.y-8}px`;
+                    svgContainer.appendChild(checkbox);
+                });
+            }
+        }; // App
 
         document.addEventListener('DOMContentLoaded', () => {
             App.init();
