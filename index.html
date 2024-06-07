@@ -69,132 +69,205 @@
         </svg>
     </div> <!-- .svg-container -->
 
+
     <script>
-        const App = {
-            init: function() {
-              console.log("App.init")
-              this.initZoom()
+      const App = {
+          init: function() {
+            console.log("App.init")
+            this.initZoom()
+            
+            this.initRepainters();
+            this.attachCheckboxes();
+
+            this.initCollab();
+          },
+          _zoomFactor: -1,
+          initZoom: function() {
+            document.querySelector('[data-svg-zoomer]')?.addEventListener('click', ()=>{
+              this._zoomFactor += 1;
+              switch((this._zoomFactor+1)%8) {
+                case 1: document.querySelector("#svg-container svg").style.width = "125%"; break;
+                case 2: document.querySelector("#svg-container svg").style.width = "150%"; break;
+                case 3: document.querySelector("#svg-container svg").style.width = "175%"; break;
+                case 4: document.querySelector("#svg-container svg").style.width = "200%"; break;
+                case 5: document.querySelector("#svg-container svg").style.width = "50%"; break;
+                case 6: document.querySelector("#svg-container svg").style.width = "75%"; break;
+                case 7: document.querySelector("#svg-container svg").style.width = "100%"; break;
+              }
+              window.dispatchEvent(new Event('resize'));
+            });
+          }, // initZoom
+          _getCoords: function(el) {
+              // Different methods of getting the coordinates are retained here in case edge cases of some SVG elements could glitch the coordinates. In testing phase.
+              var a = el?.getBoundingClientRect()
+              var b = el?.getBBox();
+              var c = el?.getClientRects()?.[0];
+
+              //
+              const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+              const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
+
+              var svg = document.querySelector("#svg-container svg");
+              let pt = svg.createSVGPoint();
+              pt.x = 0; // Needed to get the coordinate of the start of the path
+              pt.y = 0;
+              let firstMove = el.getAttribute('d').match(/M\s*([-\d.]+)\s*,\s*([-\d.]+)/);
+              if (firstMove) {
+                  pt.x = parseFloat(firstMove[1]);
+                  pt.y = parseFloat(firstMove[2]);
+              }
+              // Manually adjust the point based on the viewBox
+              const viewBox = svg.viewBox.baseVal;  // This gets the viewBox as an SVGRect object
+              // Adjust the point if necessary, e.g., translate it
+              pt.x = viewBox.x;
+              pt.y = viewBox.y;
+              var screenCTM = el.getScreenCTM();
+              var d = pt.matrixTransform(screenCTM);
+
+              console.log("Positioning", {el,a,b,c,d,firstMove,screenCTM:el.getScreenCTM(),baseVal:svg.viewBox.baseVal,scrollLeft,scrollTop});
+
+              return {
+                x: c.x + scrollLeft,
+                y: c.y + scrollTop
+              }
+
+
+              // Create an SVG point where you want to measure the coordinates
+              // var svg = document.querySelector("#svg-container svg");
+              // var path = el;
+
+              // let pt = svg.createSVGPoint();
               
-              this.initRepainters();
-              this.attachCheckboxes();
+              // // Assuming you want the coordinate of the start of the path
+              // let dAttr = path.getAttribute('d');
+              // let firstCoordMatch = dAttr.match(/M\s*([-\d.]+)\s*,\s*([-\d.]+)/);
+              // if (firstCoordMatch) {
+              //     pt.x = parseFloat(firstCoordMatch[1]);
+              //     pt.y = parseFloat(firstCoordMatch[2]);
+              // } else {
+              //     console.error('No move command found in path d attribute.');
+              //     return;
+              // }
 
-              this.initCollab();
-            },
-            _zoomFactor: -1,
-            initZoom: function() {
-              document.querySelector('[data-svg-zoomer]')?.addEventListener('click', ()=>{
-                this._zoomFactor += 1;
-                switch((this._zoomFactor+1)%8) {
-                  case 1: document.querySelector("#svg-container svg").style.width = "125%"; break;
-                  case 2: document.querySelector("#svg-container svg").style.width = "150%"; break;
-                  case 3: document.querySelector("#svg-container svg").style.width = "175%"; break;
-                  case 4: document.querySelector("#svg-container svg").style.width = "200%"; break;
-                  case 5: document.querySelector("#svg-container svg").style.width = "50%"; break;
-                  case 6: document.querySelector("#svg-container svg").style.width = "75%"; break;
-                  case 7: document.querySelector("#svg-container svg").style.width = "100%"; break;
-                }
-                window.dispatchEvent(new Event('resize'));
+              // // Convert this point to the screen coordinate system
+              // let screenCTM = path.getScreenCTM();
+              // if (screenCTM) {
+              //     let position = pt.matrixTransform(screenCTM);
+
+              //     // Adjust for current scroll position to get absolute coordinates
+              //     const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+              //     const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
+
+              //     const absoluteX = position.x + scrollLeft;
+              //     const absoluteY = position.y + scrollTop;
+
+              //     console.log("Absolute X: ", absoluteX);
+              //     console.log("Absolute Y: ", absoluteY);
+              
+              //     return {
+              //       x: absoluteX,
+              //       y: absoluteY
+              //     }
+              // } else {
+              //     console.error('Could not retrieve the transformation matrix.');
+              // }
+
+          }, // _getCoords
+          attachCheckboxes: function() {
+              const svg = document.getElementsByTagName('svg')[0];
+              const svgContainer = document.getElementById('svg-container');
+              const svgDrawings = svg.querySelectorAll('[data-checkbox]');
+              svgDrawings.forEach(svgDrawing => {
+                  // const bbox = element.getBBox(); // can be inaccurate even after render
+                  const bbox = this._getCoords(svgDrawing);
+                  if(!bbox) {
+                    console.error("Could not get bounding box for SVG element", {svgDrawing})
+                    return
+                  }
+                  const checkbox = document.createElement('input');
+                  checkbox.type = 'checkbox';
+                  checkbox.classList.add('svg-checkbox');
+                  checkbox.setAttribute('paired', svgDrawing.getAttribute("paired")); // <input... paired="0">
+                  checkbox.style.left = `${bbox.x}px`;
+                  checkbox.style.top = `${bbox.y}px`;
+                  svgContainer.appendChild(checkbox);
               });
-            }, // initZoom
-            attachCheckboxes: function() {
-                const svg = document.getElementsByTagName('svg')[0];
-                const svgContainer = document.getElementById('svg-container');
-                const svgDrawings = svg.querySelectorAll('[data-checkbox]');
-                svgDrawings.forEach(svgDrawing => {
-                    // const bbox = element.getBBox(); // can be inaccurate even after render
-                    const bbox = svgDrawing?.getBoundingClientRect ? svgDrawing.getBoundingClientRect() : svgDrawing.getBBox();
-                    if(!bbox) {
-                      console.error("Could not get bounding box for SVG element", {svgDrawing})
-                      return
-                    }
-                    const checkbox = document.createElement('input');
-                    checkbox.type = 'checkbox';
-                    checkbox.classList.add('svg-checkbox');
-                    checkbox.setAttribute('paired', svgDrawing.getAttribute("paired")); // <input... paired="0">
-                    checkbox.style.left = `${bbox.x-8}px`;
-                    checkbox.style.top = `${bbox.y-8}px`;
-                    svgContainer.appendChild(checkbox);
-                });
-            }, // attachCheckboxes
-            initRepainters: function() {
+          }, // attachCheckboxes
+          initRepainters: function() {
 
-                // Assign unique child classes to each SVG child element
-                // This is to pair the checkbox with the SVG element
-                // So when you resize the window, the checkbox moves with the SVG element
-                const svg = document.getElementsByTagName('svg')[0];
-                const svgDrawings = svg.querySelectorAll('[data-checkbox]');
-                for(var i = 0; i<svgDrawings.length; i++) {
-                    var svgDrawing = svgDrawings[i];
-                    svgDrawing.setAttribute(`paired`, i); // // <rect... paired="0">
-                }
-                
-                window.addEventListener("resize", (event)=>{
-                  console.log("resized")
-                    const checkboxes = document.querySelectorAll('.svg-checkbox');
-                    console.log("resize->reposition checkbox", {checkboxes})
-                    checkboxes.forEach(checkbox => {
-                      var pairIndex = checkbox.getAttribute("paired");
-                      console.log("resize->reposition checkbox", {pairIndex})
-                      var pairedSvgDrawing = document.querySelector(`[paired="${pairIndex}"]:not(input)`);
-                      // var bbox = pairedSvgDrawing.getBoundingClientRect();
-                      const bbox = pairedSvgDrawing?.getBoundingClientRect ? pairedSvgDrawing.getBoundingClientRect() : pairedSvgDrawing.getBBox();
-                      checkbox.style.left = `${bbox.x-8}px`;
-                      checkbox.style.top = `${bbox.y-8}px`;
-                    });
+              // Assign unique child classes to each SVG child element
+              // This is to pair the checkbox with the SVG element
+              // So when you resize the window, the checkbox moves with the SVG element
+              const svg = document.getElementsByTagName('svg')[0];
+              const svgDrawings = svg.querySelectorAll('[data-checkbox]');
+              for(var i = 0; i<svgDrawings.length; i++) {
+                  var svgDrawing = svgDrawings[i];
+                  svgDrawing.setAttribute(`paired`, i); // // <rect... paired="0">
+              }
+              
+              window.addEventListener("resize", (event)=>{
+                console.log("resized")
+                  const checkboxes = document.querySelectorAll('.svg-checkbox');
+                  console.log("resize->reposition checkbox", {checkboxes})
+                  checkboxes.forEach(checkbox => {
+                    var pairIndex = checkbox.getAttribute("paired");
+                    console.log("resize->reposition checkbox", {pairIndex})
+                    var pairedSvgDrawing = document.querySelector(`[paired="${pairIndex}"]:not(input)`);
+                    // var bbox = pairedSvgDrawing.getBoundingClientRect();
+                    const bbox = this._getCoords(pairedSvgDrawing);
+                    checkbox.style.left = `${bbox.x}px`;
+                    checkbox.style.top = `${bbox.y}px`;
+                  });
+              })
+          }, // initRepainters
+          initCollab() {
+
+            // When the page loads, read the checked indexes
+            fetch("logic/read.php")
+            .then(response=>response.json())
+            .then((obj) => {
+                // console.log({obj});
+                // console.log(obj.current); 
+
+                var checkmarks = obj.checkmarks;
+                checkmarks = JSON.parse(checkmarks);
+
+                checkmarks.forEach((checkmarkPos) => {
+                  var test = document.querySelectorAll("input.svg-checkbox")?.[checkmarkPos];
+                  if(test)
+                    test.checked = true; 
                 })
-            }, // initRepainters
-            initCollab() {
-
-              // When the page loads, read the checked indexes
-              fetch("logic/read.php")
-              .then(response=>response.json())
-              .then((obj) => {
-                  // Fill textareas
-                  // console.log({obj});
-
-                  //var obj = JSON.parse(obj), // switched from $.get and $.post to fetch which already parsed JSON
-
-                  var checkmarks = obj.checkmarks;
-                  checkmarks = JSON.parse(checkmarks);
-
-                  checkmarks.forEach((checkmarkPos) => {
-                    var test = document.querySelectorAll("input.svg-checkbox")?.[checkmarkPos];
-                    if(test)
-                      test.checked = true; 
-                  })
-
-                  // console.log(obj.current); 
-              }); // fetch
+            }); // fetch
 
 
-              // When a checkbox is checked, save the checked indexes
-              document.querySelectorAll("input.svg-checkbox").forEach((el) => {
-                el.addEventListener("change", (event) => {
-                  var checkmarks = [];
-                  document.querySelectorAll("input.svg-checkbox").forEach((el, i) => { if (el.checked) checkmarks.push(el.getAttribute("paired")); });
-                  checkmarks = JSON.stringify(checkmarks);
-                  console.log("Collab checkmarks", checkmarks);
+            // When a checkbox is checked, save the checked indexes
+            document.querySelectorAll("input.svg-checkbox").forEach((el) => {
+              el.addEventListener("change", (event) => {
+                var checkmarks = [];
+                document.querySelectorAll("input.svg-checkbox").forEach((el, i) => { if (el.checked) checkmarks.push(el.getAttribute("paired")); });
+                checkmarks = JSON.stringify(checkmarks);
+                console.log("Collab checkmarks", checkmarks);
 
-                  fetch("logic/write.php", {
-                    method: "POST",
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ checkmarks })
-                  }).then(response=>response.text())
-                  .then((res) => { console.log(res); });
-                });
+                fetch("logic/write.php", {
+                  method: "POST",
+                  headers: {
+                      'Content-Type': 'application/json'
+                  },
+                  body: JSON.stringify({ checkmarks })
+                }).then(response=>response.text())
+                .then((res) => { console.log(res); });
               });
-            } // initCollab
-        }; // App
+            });
+          } // initCollab
+      }; // App
 
-        document.addEventListener('DOMContentLoaded', () => {
-          App.init(); 
+      document.addEventListener('DOMContentLoaded', () => {
+        App.init(); 
 
-          // setTimeout(()=>{
-          //   window.dispatchEvent(new Event('resize'));
-          // }, 2000);
-        });
-    </script>
+        // setTimeout(()=>{
+        //   window.dispatchEvent(new Event('resize'));
+        // }, 2000);
+      });
+  </script>
 </body>
 </html>
