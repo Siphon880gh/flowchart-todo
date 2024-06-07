@@ -73,8 +73,8 @@
             init: function() {
               this.initZoom()
               
+              this.initRepainters();
               this.attachCheckboxes();
-              // this.initRepainters();
             },
             _zoomFactor: -1,
             initZoom: function() {
@@ -98,15 +98,47 @@
                 const svgDrawings = svg.querySelectorAll('[data-checkbox]');
                 svgDrawings.forEach(svgDrawing => {
                     // const bbox = element.getBBox(); // can be inaccurate even after render
-                    const bbox = svgDrawing.getBoundingClientRect();
+                    const bbox = svgDrawing?.getBoundingClientRect ? svgDrawing.getBoundingClientRect() : svgDrawing.getBBox();
+                    if(!bbox) {
+                      console.error("Could not get bounding box for SVG element", {svgDrawing})
+                      return
+                    }
                     const checkbox = document.createElement('input');
                     checkbox.type = 'checkbox';
                     checkbox.classList.add('svg-checkbox');
+                    checkbox.setAttribute('paired', svgDrawing.getAttribute("paired")); // <input... paired="0">
                     checkbox.style.left = `${bbox.x-8}px`;
                     checkbox.style.top = `${bbox.y-8}px`;
                     svgContainer.appendChild(checkbox);
                 });
-            }
+            },
+            initRepainters: function() {
+
+                // Assign unique child classes to each SVG child element
+                // This is to pair the checkbox with the SVG element
+                // So when you resize the window, the checkbox moves with the SVG element
+                const svg = document.getElementsByTagName('svg')[0];
+                const svgDrawings = svg.querySelectorAll('[data-checkbox]');
+                for(var i = 0; i<svgDrawings.length; i++) {
+                    var svgDrawing = svgDrawings[i];
+                    svgDrawing.setAttribute(`paired`, i); // // <rect... paired="0">
+                }
+                
+                window.addEventListener("resize", (event)=>{
+                  console.log("resized")
+                    const checkboxes = document.querySelectorAll('.svg-checkbox');
+                    console.log("resize->reposition checkbox", {checkboxes})
+                    checkboxes.forEach(checkbox => {
+                      var pairIndex = checkbox.getAttribute("paired");
+                      console.log("resize->reposition checkbox", {pairIndex})
+                      var pairedSvgDrawing = document.querySelector(`[paired="${pairIndex}"]:not(input)`);
+                      // var bbox = pairedSvgDrawing.getBoundingClientRect();
+                      const bbox = pairedSvgDrawing?.getBoundingClientRect ? pairedSvgDrawing.getBoundingClientRect() : pairedSvgDrawing.getBBox();
+                      checkbox.style.left = `${bbox.x-8}px`;
+                      checkbox.style.top = `${bbox.y-8}px`;
+                    });
+                })
+            },
         }; // App
 
         document.addEventListener('DOMContentLoaded', () => {
