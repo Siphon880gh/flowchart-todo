@@ -5,12 +5,35 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SVG Flowchart with Checkboxes - Teamspace</title>
     <style>
-    </style>
+        #svg-container {
+          width:100%;
+          height:100%;
+          overflow: visible;
+        }
+        #svg-container, svg {
+            position: relative;
+            z-index: 1;
+        }
+        #svg-container svg {
+          width:100%;
+          height:100%;
+          overflow: visible;
+        }
+        .svg-checkbox {
+            position: absolute;
+            z-index: 2;
+        }
+  </style>
 </head>
 <body>
-    <div style="display:block; top:0; left:0;"><button onclick="App.zoom()">Zoom</button></div>
+    <div style="display:block; top:0; left:0;"><button data-svg-zoomer>Zoom</button></div>
+    <!-- TOOLER: Add "data-checkbox" attribute to svg children you want to have floating checkboxes that your team ticks -->
+    <!-- TOOLER: If want zoom feature to work, make sure sure to remove width and height attributes
+                 and set the pixels in the viewBox attribute in this format: "0 0 width height"
+                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 430 320" preserveAspectRatio="xMidYMid meet">
+    -->
     <div id="svg-container">
-        <svg width="600" height="400" xmlns="http://www.w3.org/2000/svg">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 430 320" preserveAspectRatio="xMidYMid meet">
             <!-- Rectangle (Start) -->
             <rect x="50" y="20" width="120" height="40" fill="lightblue" stroke="black" data-checkbox />
             <text x="110" y="45" text-anchor="middle" font-size="14" fill="black">Start</text>
@@ -46,6 +69,34 @@
     </div> <!-- .svg-container -->
 
     <script>
+              const App = {
+            init: function() {
+              this.initZoom()
+              
+              // this.attachCheckboxes();
+              // this.initRepainters();
+            },
+            _zoomFactor: -1,
+            initZoom: function() {
+              document.querySelector('[data-svg-zoomer]')?.addEventListener('click', ()=>{
+                this._zoomFactor += 1;
+                switch((this._zoomFactor+1)%8) {
+                  case 1: document.querySelector("#svg-container svg").style.width = "125%"; break;
+                  case 2: document.querySelector("#svg-container svg").style.width = "150%"; break;
+                  case 3: document.querySelector("#svg-container svg").style.width = "175%"; break;
+                  case 4: document.querySelector("#svg-container svg").style.width = "200%"; break;
+                  case 5: document.querySelector("#svg-container svg").style.width = "50%"; break;
+                  case 6: document.querySelector("#svg-container svg").style.width = "75%"; break;
+                  case 7: document.querySelector("#svg-container svg").style.width = "100%"; break;
+                }
+                window.dispatchEvent(new Event('resize'));
+              });
+            },
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            App.init();
+        });
     </script>
 </body>
 </html>
