@@ -8,13 +8,25 @@
         }
     }
     
-    $prepared = [
-        "checkmarks"=>[]
-    ];
+    if(isset($_GET["checkmarks"])) {
+        $prepared = [
+            "checkmarks"=>[]
+        ];
+    
+        $checkmarksBody = @file_get_contents("../data/checkmarks.json");
+        if($checkmarksBody===false) $checkmarksBody = [];
+        else $prepared["checkmarks"] = $checkmarksBody;
+    }
 
-    $checkmarksBody = @file_get_contents("../data/checkmarks.json");
-    if($checkmarksBody===false) $checkmarks = [];
-    else $prepared["checkmarks"] = $checkmarksBody;
+    if(isset($_GET["texts"])) {
+        $prepared = [
+            "texts"=>[]
+        ];
+    
+        $textsBody = @file_get_contents("../data/texts.json");
+        if($textsBody===false) $textsBody = [];
+        else $prepared["texts"] = $textsBody;
+    }
 
     echo json_encode($prepared);
 ?>

@@ -21,11 +21,19 @@ if (!headers_sent()) {
     if(isset($_POST["checkmarks"])) {
         $checkmarks = $_POST["checkmarks"];
         
-        @file_put_contents("../data/checkmarks.json", $checkmarks);
-        echo json_encode(["post"=>true]);
-    } else {
-        $data = json_decode(file_get_contents('php://input'), true);
-        echo json_encode(["post"=>false, "debug_post"=>$_POST, "debug_php_input"=>$data, "debug_content_type"=>$_SERVER["CONTENT_TYPE"], "debug_request_method"=>$_SERVER['REQUEST_METHOD']]);
-    }
+        @file_put_contents("../data/checkmarks.json", json_encode($checkmarks));
+        echo json_encode(["post"=>"checkmarks"]);
+    } 
+    if(isset($_POST["texts"])) {
+        $texts = $_POST["texts"];
+        
+        @file_put_contents("../data/texts.json", json_encode($texts));
+        echo json_encode(["post"=>$texts]);
+    } 
+    
+    // else {
+    //     $data = json_decode(file_get_contents('php://input'), true);
+    //     echo json_encode(["post"=>false, "debug_post"=>$_POST, "debug_php_input"=>$data, "debug_content_type"=>$_SERVER["CONTENT_TYPE"], "debug_request_method"=>$_SERVER['REQUEST_METHOD']]);
+    // }
 
 ?>

@@ -69,6 +69,7 @@
         </svg>
     </div> <!-- .svg-container -->
 
+    <textarea save-text="memo" style="width:100%;height:25vh;" placeholder="Memo to team"></textarea>
 
     <script>
       const App = {
@@ -80,7 +81,8 @@
             this.initRepainters();
             this.attachCheckboxes();
 
-            this.initCollab();
+            this.initCollabCheckmarks();
+            this.initCollabTexts();
           },
           _zoomFactor: -1,
           validateSVG: function() {
@@ -116,7 +118,7 @@
               let pt = svg.createSVGPoint();
               pt.x = 0; // Needed to get the coordinate of the start of the path
               pt.y = 0;
-              let firstMove = el.getAttribute('d').match(/M\s*([-\d.]+)\s*,\s*([-\d.]+)/);
+              let firstMove = el.getAttribute('d')?.match(/M\s*([-\d.]+)\s*,\s*([-\d.]+)/);
               if (firstMove) {
                   pt.x = parseFloat(firstMove[1]);
                   pt.y = parseFloat(firstMove[2]);
@@ -225,22 +227,22 @@
                   });
               })
           }, // initRepainters
-          initCollab() {
+          initCollabCheckmarks() {
 
             // When the page loads, read the checked indexes
-            fetch("logic/read.php")
+            fetch("logic/read.php?checkmarks=1")
             .then(response=>response.json())
-            .then((obj) => {
-                // console.log({obj});
-                // console.log(obj.current); 
+            .then((data) => {
+                // console.log({data});
 
-                var checkmarks = obj.checkmarks;
+                var checkmarks = data.checkmarks;
                 checkmarks = JSON.parse(checkmarks);
 
-                checkmarks.forEach((checkmarkPos) => {
-                  var test = document.querySelectorAll("input.svg-checkbox")?.[checkmarkPos];
-                  if(test)
-                    test.checked = true; 
+                checkmarks.forEach((checkmarkObj) => {
+                  var index = checkmarkObj.selector;
+                  var checkboxEl = document.querySelectorAll("input.svg-checkbox")?.[index];
+                  if(checkboxEl)
+                    checkboxEl.checked = true; 
                 })
             }); // fetch
 
@@ -249,8 +251,10 @@
             document.querySelectorAll("input.svg-checkbox").forEach((el) => {
               el.addEventListener("change", (event) => {
                 var checkmarks = [];
-                document.querySelectorAll("input.svg-checkbox").forEach((el, i) => { if (el.checked) checkmarks.push(el.getAttribute("paired")); });
-                checkmarks = JSON.stringify(checkmarks);
+                document.querySelectorAll("input.svg-checkbox").forEach((el, i) => { 
+                  if (el.checked) checkmarks.push({selector:el.getAttribute("paired")}); 
+                });
+                // checkmarks = JSON.stringify(checkmarks);
                 console.log("Collab checkmarks", checkmarks);
 
                 fetch("logic/write.php", {
@@ -260,10 +264,58 @@
                   },
                   body: JSON.stringify({ checkmarks })
                 }).then(response=>response.text())
-                .then((res) => { console.log(res); });
+                .then((res) => { 
+                  console.log(res);
+                });
               });
             });
-          } // initCollab
+          }, // initCollabCheckmarks,
+          initCollabTexts() {
+
+            // When the page loads, read the checked indexes
+            fetch("logic/read.php?texts=1")
+            .then(response=>response.json())
+            .then((data) => {
+                console.log({data});
+
+                var texts = data.texts;
+                texts = JSON.parse(texts);
+
+                texts.forEach((textObj) => {
+                  var selector = textObj.selector;
+                  var text = textObj.text;
+                  var textEl = document.querySelector(`[save-text="${selector}"]`);
+                  if(textEl)
+                    textEl.value = text; 
+                })
+            }); // fetch
+
+            // When a textbox is changed, save the texts
+            document.querySelectorAll("[save-text]").forEach((el) => {
+              el.addEventListener("change", (event) => {
+                var textList = [];
+                document.querySelectorAll('[save-text]').forEach((el)=> {
+                  const selector = el.getAttribute("save-text");
+                  const text = el.value;
+              
+                  // console.log({selector,text});
+                  textList.push({selector,text});
+                });
+                console.log({textList})
+                fetch("logic/write.php?texts=1", {
+                  method: "POST",
+                  headers: {
+                      'Content-Type': 'application/json'
+                  },
+                  body: JSON.stringify({ texts: textList })
+                }).then(response=>response.json())
+                .then((res) => { 
+                  console.log(res);
+                });
+              }); // onchange
+            }); // for all text DOMs
+            
+          } // initCollabTexts
       }; // App
 
       document.addEventListener('DOMContentLoaded', () => {
