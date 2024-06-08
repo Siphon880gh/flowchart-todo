@@ -101,6 +101,7 @@
 
             this.initCollabCheckmarks();
             this.initCollabTexts();
+            this.initCollab_RealTime();
           },
           scrollToBottom: function() {
             window.scrollTo(0,document.body.scrollHeight);
@@ -323,7 +324,7 @@
                   textList.push({selector,text});
                 });
                 console.log({textList})
-                fetch("logic/write.php?texts=1", {
+                fetch("logic/write.php", {
                   method: "POST",
                   headers: {
                       'Content-Type': 'application/json'
@@ -336,7 +337,69 @@
               }); // onchange
             }); // for all text DOMs
             
-          } // initCollabTexts
+          }, // initCollabTexts
+          initCollab_RealTime() {
+            setInterval(()=>{
+              fetch('logic/check.php', {
+                method: 'GET', // You can also use 'POST', 'PUT', etc.
+                credentials: 'include'  // This will include cookies such as PHPSESSID
+              })
+              .then(response => response.json())
+              .then(data => {
+
+                  data.forEach(datum=>{
+                      switch(datum.status) {
+                          case "CHECKMARKS_CHANGED":
+                            fetch("logic/read.php?checkmarks=2")
+                            .then(response=>response.json())
+                            .then((data) => {
+                                // console.log({data});
+
+                                var checkmarks = data.checkmarks;
+                                checkmarks = JSON.parse(checkmarks);
+
+                                document.querySelectorAll("input.svg-checkbox").forEach(checkboxEl => {
+                                  checkboxEl.checked = false;
+                                })
+
+                                checkmarks.forEach((checkmarkObj) => {
+                                  var index = checkmarkObj.selector;
+                                  var checkboxEl = document.querySelectorAll("input.svg-checkbox")?.[index];
+                                  if(checkboxEl)
+                                    checkboxEl.checked = true; 
+                                })
+                            }); // fetch
+                              break;
+                          case "TEXTS_CHANGED":
+                              // When the page loads, read the checked indexes
+                              fetch("logic/read.php?texts=2")
+                              .then(response=>response.json())
+                              .then((data) => {
+                                  console.log({data});
+
+                                  var texts = data.texts;
+                                  texts = JSON.parse(texts);
+
+                                  document.querySelectorAll("[save-text]").forEach(textEl => {
+                                    textEl.value = "";
+                                  })
+
+                                  texts.forEach((textObj) => {
+                                    var selector = textObj.selector;
+                                    var text = textObj.text;
+                                    var textEl = document.querySelector(`[save-text="${selector}"]`);
+                                    if(textEl)
+                                      textEl.value = text; 
+                                  })
+                              }); // fetch
+                              break;
+                      }
+                  });
+                  
+              })
+              .catch(error => console.log('Error:', error));
+            }, 3000);
+          },
       }; // App
 
       document.addEventListener('DOMContentLoaded', () => {
