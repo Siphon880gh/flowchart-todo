@@ -23,6 +23,18 @@
             position: absolute;
             z-index: 2;
         }
+        .top-right {
+          position: fixed;
+          z-index: 3;
+          top: 10px;
+          right: 10px;
+        }
+        .clickable {
+          cursor: pointer;
+        }
+        .clickable:hover {
+          filter: invert(1);
+        }
   </style>
 </head>
 <body>
@@ -70,6 +82,12 @@
     </div> <!-- .svg-container -->
 
     <textarea save-text="memo" style="width:100%;height:25vh;" placeholder="Memo to team"></textarea>
+    <div class="top-right clickable" onclick="App.scrollToBottom();">
+      <svg width="20px" height="20px" viewBox="0 0 50 50" xmlns="http://www.w3.org/2000/svg">
+        <path fill="#FFFFFF" stroke="#000000" d="M25,3C13.5,3,4,11.8,4,22c0,4.5,2.2,8.5,5.6,11.4C6.8,37.5,4.4,39.9,2,41c0.8-1.8,1.8-3.3,3.1-4.5
+          C7.8,38.2,10,39,12.5,39c1.6,0,3.1-0.3,4.5-0.8C19,40.3,22,41,25,41c11.5,0,21-8.8,21-20S36.5,3,25,3z"></path>
+      </svg>      
+    </div>
 
     <script>
       const App = {
@@ -83,6 +101,9 @@
 
             this.initCollabCheckmarks();
             this.initCollabTexts();
+          },
+          scrollToBottom: function() {
+            window.scrollTo(0,document.body.scrollHeight);
           },
           _zoomFactor: -1,
           validateSVG: function() {
