@@ -142,7 +142,7 @@
 
             // Responsiveness
             if(document.body.clientWidth>800) {
-              document.querySelector("#svg-container svg").style.width = "50%";
+              document.querySelector("#svg-container svg").style.width = "75%";
             } else {
               document.querySelector("#svg-container svg").style.width = "100%";
             }
@@ -210,8 +210,8 @@
               console.log("Positioning", {el,a,b,c,d,firstMove,screenCTM:el.getScreenCTM(),baseVal:svg.viewBox.baseVal,scrollLeft,scrollTop});
 
               return {
-                x: c.x + scrollLeft,
-                y: c.y + scrollTop
+                x: (c?.x ? c?.x : (a?.x ? a?.x: b?.x)) + scrollLeft,
+                y: (c?.y ? c?.y : (a?.y ? a?.y: b?.y))  + scrollTop
               }
 
 
