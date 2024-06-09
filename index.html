@@ -311,10 +311,11 @@
 
 
             // When a checkbox is checked, save the checked indexes
-            document.querySelectorAll("input.svg-checkbox").forEach((el) => {
+            var allCheckboxes = document.querySelectorAll("input.svg-checkbox");
+            allCheckboxes.forEach((el) => {
               el.addEventListener("change", (event) => {
                 var checkmarks = [];
-                document.querySelectorAll("input.svg-checkbox").forEach((el, i) => { 
+                allCheckboxes.forEach((el, i) => { 
                   if (el.checked) checkmarks.push({selector:el.getAttribute("paired")}); 
                 });
                 // checkmarks = JSON.stringify(checkmarks);
@@ -330,6 +331,13 @@
                 .then((res) => { 
                   console.log(res);
                 });
+              });
+              el.addEventListener("contextmenu", (event) => {
+                event.preventDefault();
+                var confirmClear = confirm("Clear all checkmarks?");
+                if(!confirmClear) return;
+                document.querySelectorAll("#svg-container input").forEach(el=>el.checked=false)
+                el.dispatchEvent(new Event('change'));
               });
             });
           }, // initCollabCheckmarks,
