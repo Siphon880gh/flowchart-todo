@@ -8,6 +8,9 @@
         }
     }
     
+    // Start the session
+    session_start();
+    
     if(isset($_GET["checkmarks"])) {
         $prepared = [
             "checkmarks"=>[]

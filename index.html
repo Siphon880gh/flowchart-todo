@@ -393,6 +393,7 @@
                   data.forEach(datum=>{
                       switch(datum.status) {
                           case "CHECKMARKS_CHANGED":
+                            console.log("CHECKMARKS_CHANGED");
                             fetch("logic/read.php?checkmarks=2")
                             .then(response=>response.json())
                             .then((data) => {

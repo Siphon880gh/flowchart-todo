@@ -1,12 +1,15 @@
 <?php
-if (!headers_sent()) {
-    if (!in_array('Access-Control-Allow-Origin', headers_list())) {
-        header('Access-Control-Allow-Origin: *');
-        header("Access-Control-Allow-Headers: Content-Type");
-        // header("Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept");
-        header('Access-Control-Allow-Methods: GET, POST, PUT');
+    if (!headers_sent()) {
+        if (!in_array('Access-Control-Allow-Origin', headers_list())) {
+            header('Access-Control-Allow-Origin: *');
+            header("Access-Control-Allow-Headers: Content-Type");
+            // header("Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept");
+            header('Access-Control-Allow-Methods: GET, POST, PUT');
+        }
     }
-}
+    
+    // Start the session
+    session_start();
 
     $contentType = $_SERVER["CONTENT_TYPE"];
     if ($contentType === "application/json") {
@@ -23,12 +26,18 @@ if (!headers_sent()) {
         
         @file_put_contents("../data/checkmarks.json", json_encode($checkmarks));
         echo json_encode(["post"=>"checkmarks"]);
+
+        $lastModifiedTime = filemtime("../data/checkmarks.json");
+        $_SESSION["checkmarks_last_modified"] = $lastModifiedTime;
     } 
     if(isset($_POST["texts"])) {
         $texts = $_POST["texts"];
         
         @file_put_contents("../data/texts.json", json_encode($texts));
         echo json_encode(["post"=>$texts]);
+
+        $lastModifiedTime = filemtime("../data/texts.json");
+        $_SESSION["texts_last_modified"] = $lastModifiedTime;
     } 
     
     // else {
