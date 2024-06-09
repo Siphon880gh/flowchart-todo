@@ -11,7 +11,7 @@
           overflow: visible;
           background-color: #fff;
           z-index: 4;
-          display: none; /* App init will reveal */
+          opacity: 0; /* App init will reveal */
         }
         #svg-container, svg {
             position: relative;
@@ -70,7 +70,7 @@
 <body>
     <h1>Flowchart Todo</h1>
     <div style="display:block; top:0; left:0;"><button data-svg-zoomer>Zoom</button></div>
-    <!-- TOOLER: Add "data-checkbox" attribute to svg children you want to have floating checkboxes that your team ticks -->
+    <!-- TOOLER: Add "init-checkbox" attribute to svg children you want to have floating checkboxes that your team ticks -->
     <!-- TOOLER: If want zoom feature to work, make sure sure to remove width and height attributes
                  and set the pixels in the viewBox attribute in this format: "0 0 width height"
                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 430 320" preserveAspectRatio="xMidYMid meet">
@@ -78,28 +78,28 @@
     <div id="svg-container">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 430 320" preserveAspectRatio="xMidYMid meet">
             <!-- Rectangle (Start) -->
-            <rect x="50" y="20" width="120" height="40" fill="lightblue" stroke="black" data-checkbox />
+            <rect x="50" y="20" width="120" height="40" fill="lightblue" stroke="black" init-checkbox />
             <text x="110" y="45" text-anchor="middle" font-size="14" fill="black">Start</text>
             
             <!-- Arrow (Start to Process) -->
             <path d="M110,60 L110,100" stroke="black" marker-end="url(#arrowhead)" />
             
             <!-- Rectangle (Process) -->
-            <rect x="50" y="100" width="120" height="40" fill="lightgreen" stroke="black" data-checkbox />
+            <rect x="50" y="100" width="120" height="40" fill="lightgreen" stroke="black" init-checkbox />
             <text x="110" y="125" text-anchor="middle" font-size="14" fill="black">Process</text>
             
             <!-- Arrow (Process to Decision) -->
             <path d="M110,140 L110,180" stroke="black" marker-end="url(#arrowhead)" />
             
             <!-- Diamond (Decision) -->
-            <polygon points="110,200 140,220 110,240 80,220" fill="lightyellow" stroke="black" data-checkbox />
+            <polygon points="110,200 140,220 110,240 80,220" fill="lightyellow" stroke="black" init-checkbox />
             <text x="110" y="225" text-anchor="middle" font-size="14" fill="black">Decision</text>
             
             <!-- Arrow (Decision to End) -->
             <path d="M140,220 L200,220" stroke="black" marker-end="url(#arrowhead)"/>
             
             <!-- Rectangle (End) -->
-            <rect x="200" y="200" width="120" height="40" fill="lightcoral" stroke="black" data-checkbox />
+            <rect x="200" y="200" width="120" height="40" fill="lightcoral" stroke="black" init-checkbox />
             <text x="260" y="225" text-anchor="middle" font-size="14" fill="black">End</text>
             
             <!-- Arrowhead definition -->
@@ -146,7 +146,8 @@
             } else {
               document.querySelector("#svg-container svg").style.width = "100%";
             }
-            document.querySelector("#svg-container").style.display = "block"; // No FOUC
+            window.dispatchEvent(new Event('resize'));
+            document.querySelector("#svg-container").style.opacity = 1; // No FOUC
 
           }, // init
           scrollToBottom: function() {
@@ -258,7 +259,7 @@
           attachCheckboxes: function() {
               const svg = document.getElementsByTagName('svg')[0];
               const svgContainer = document.getElementById('svg-container');
-              const svgDrawings = svg.querySelectorAll('[data-checkbox]');
+              const svgDrawings = svg.querySelectorAll('[init-checkbox]');
               svgDrawings.forEach(svgDrawing => {
                   // const bbox = element.getBBox(); // can be inaccurate even after render
                   const bbox = this._getCoords(svgDrawing);
@@ -281,7 +282,7 @@
               // This is to pair the checkbox with the SVG element
               // So when you resize the window, the checkbox moves with the SVG element
               const svg = document.getElementsByTagName('svg')[0];
-              const svgDrawings = svg.querySelectorAll('[data-checkbox]');
+              const svgDrawings = svg.querySelectorAll('[init-checkbox]');
               for(var i = 0; i<svgDrawings.length; i++) {
                   var svgDrawing = svgDrawings[i];
                   svgDrawing.setAttribute(`paired`, i); // // <rect... paired="0">
