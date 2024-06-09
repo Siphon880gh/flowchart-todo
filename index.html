@@ -11,6 +11,7 @@
           overflow: visible;
           background-color: #fff;
           z-index: 4;
+          display: none; /* App init will reveal */
         }
         #svg-container, svg {
             position: relative;
@@ -138,7 +139,16 @@
             this.initCollabCheckmarks();
             this.initCollabTexts();
             this.initCollab_RealTime();
-          },
+
+            // Responsiveness
+            if(document.body.clientWidth>800) {
+              document.querySelector("#svg-container svg").style.width = "50%";
+            } else {
+              document.querySelector("#svg-container svg").style.width = "100%";
+            }
+            document.querySelector("#svg-container").style.display = "block"; // No FOUC
+
+          }, // init
           scrollToBottom: function() {
             window.scrollTo(0,document.body.scrollHeight);
           },

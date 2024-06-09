@@ -28,7 +28,7 @@ Note this is in real-time, so when one team member makes a change to checkboxes 
 ## :minidisc: Installation:
 Run in a PHP server.
 
-You can design your SVG flow chart on https://app.code2flow.com/ or https://miro.com/, then export as SVG. Copy the SVG code into the index.html making sure the SVG tag has viewBox and preserveAspectRatio attributes so this app can calculate the checkbox positioning.
+You can design your SVG flow chart on https://app.code2flow.com/ or other flow chart tools, then export as SVG. Copy the SVG code into the index.html making sure the SVG tag HAS viewBox and preserveAspectRatio attributes and you've REMOVED width and height attributes, so this app can control the sizing of the svg and calculate the checkbox positioning.
 
 Add data-checkbox to each SVG child you want to have a checkbox (eg. rect, path, etc)
 
