@@ -168,14 +168,28 @@
           initZoom: function() {
             document.querySelector('[data-svg-zoomer]')?.addEventListener('click', ()=>{
               this._zoomFactor += 1;
-              switch((this._zoomFactor+1)%8) {
+              switch(Math.abs((this._zoomFactor)%7)) {
+                case 0: document.querySelector("#svg-container svg").style.width = "100%"; break;
                 case 1: document.querySelector("#svg-container svg").style.width = "125%"; break;
-                case 2: document.querySelector("#svg-container svg").style.width = "150%"; break;
-                case 3: document.querySelector("#svg-container svg").style.width = "175%"; break;
-                case 4: document.querySelector("#svg-container svg").style.width = "200%"; break;
-                case 5: document.querySelector("#svg-container svg").style.width = "50%"; break;
-                case 6: document.querySelector("#svg-container svg").style.width = "75%"; break;
-                case 7: document.querySelector("#svg-container svg").style.width = "100%"; break;
+                case 2: document.querySelector("#svg-container svg").style.width = "133%"; break;
+                case 3: document.querySelector("#svg-container svg").style.width = "150%"; break;
+                case 4: document.querySelector("#svg-container svg").style.width = "75%"; break;
+                case 5: document.querySelector("#svg-container svg").style.width = "85%"; break;
+                case 6: document.querySelector("#svg-container svg").style.width = "90%"; break;
+              }
+              window.dispatchEvent(new Event('resize'));
+            });
+            document.querySelector('[data-svg-zoomer]')?.addEventListener('contextmenu', (event)=>{
+              event.preventDefault();
+              this._zoomFactor -= 1;
+              switch(Math.abs((this._zoomFactor)%7)) {
+                case 0: document.querySelector("#svg-container svg").style.width = "100%"; break;
+                case 1: document.querySelector("#svg-container svg").style.width = "125%"; break;
+                case 2: document.querySelector("#svg-container svg").style.width = "133%"; break;
+                case 3: document.querySelector("#svg-container svg").style.width = "150%"; break;
+                case 4: document.querySelector("#svg-container svg").style.width = "75%"; break;
+                case 5: document.querySelector("#svg-container svg").style.width = "85%"; break;
+                case 6: document.querySelector("#svg-container svg").style.width = "90%"; break;
               }
               window.dispatchEvent(new Event('resize'));
             });
@@ -207,7 +221,7 @@
               var screenCTM = el.getScreenCTM();
               var d = pt.matrixTransform(screenCTM);
 
-              console.log("Positioning", {el,a,b,c,d,firstMove,screenCTM:el.getScreenCTM(),baseVal:svg.viewBox.baseVal,scrollLeft,scrollTop});
+              // console.log("Positioning", {el,a,b,c,d,firstMove,screenCTM:el.getScreenCTM(),baseVal:svg.viewBox.baseVal,scrollLeft,scrollTop});
 
               return {
                 x: (c?.x ? c?.x : (a?.x ? a?.x: b?.x)) + scrollLeft,
@@ -289,12 +303,12 @@
               }
               
               window.addEventListener("resize", (event)=>{
-                console.log("resized")
+                // console.log("resized")
                   const checkboxes = document.querySelectorAll('.svg-checkbox');
-                  console.log("resize->reposition checkbox", {checkboxes})
+                  // console.log("resize->reposition checkbox", {checkboxes})
                   checkboxes.forEach(checkbox => {
                     var pairIndex = checkbox.getAttribute("paired");
-                    console.log("resize->reposition checkbox", {pairIndex})
+                    // console.log("resize->reposition checkbox", {pairIndex})
                     var pairedSvgDrawing = document.querySelector(`[paired="${pairIndex}"]:not(input)`);
                     // var bbox = pairedSvgDrawing.getBoundingClientRect();
                     const bbox = this._getCoords(pairedSvgDrawing);
